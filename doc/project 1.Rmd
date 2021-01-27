@@ -1,0 +1,102 @@
+---
+title: “Would education motivate different racial and ethnical group to participate in the election vote?”
+output: html_notebook
+---
+
+The pandemic has been spreading for over one year and the competitve presidential election just ended few months ago. In the past stressful year, the racial and ethnical conflicts have been one of the most popular topics discussed around our society. How could different racial and ethnical groups make their voices heard and louder around the society? Participating the election vote and choosing the president who they think is able to solve the problems are important ways to relieve the pressure. However, not everyone is willing to vote. Therefore, what factors could encourage different racial and ethnical groups to vote? In details, would education motivate different racial and ethnical group to participate in the election vote?   
+
+Therefore, this data analysis tries to answer the question above by using the _Time Series Cumulative Data_ from _American National Election Studies_ (ANES). _Time Series Cumulative Data_ contains answers replied by respondents from different years on selected questions that have been asked in ANES, such as "What racial or ethical group or groups best describes you?" and "What is the highest level of school you have completed or the highest degree you have received?". Other than the data from these two survey questions, I also use the records of turnout which includes the results that whether the respondent did not registere and not vote, registered but not voted and voted (registered). After removing all the not applicable (NA) values, I obtained my final data set related to the question that I want to answer, and saved it as "anes_use". 
+
+```{r include=FALSE}
+library(tidyverse)
+library(haven)
+anes <- read_sav("~/Desktop/proj/data/anes_timeseries_cdf.sav")
+```
+
+```{r include=FALSE}
+Election_years=as.character(seq(1952, 2020, 4))
+
+anes1 <- anes%>%
+  mutate(year=as_factor(VCF0004), 
+         education=as_factor(VCF0110),
+         race=as_factor(VCF0105a),
+         turnout=as_factor(VCF0703))%>%
+  filter(year %in% Election_years)%>%
+  select(year, education, race, turnout)
+
+#check the number of NA values in each columns
+colSums(is.na(anes1))
+
+#remove all NA's
+anes_use <- anes1%>%
+  filter(!is.na(turnout))%>%
+  filter(!is.na(education))%>%
+  filter(!is.na(race))
+
+#Save the final data related to the analysis.
+save(anes_use, file="~/Desktop/proj/output/data_use.RData")
+```
+
+The following graphs show the composition of different racial and ethnical groups in the turnout during each election from the year 1952 to 2016. Although the White non-Hispanic group always took up the largest proportion of the respondents who neither registered nor voted, this trend was generally decreasing. The proportion of White non-Hispanic respondents who neither registered nor voted reached their lowest level in 2008. This may be caused by the Financial Crisis because most people were willing to vote for a new administration to deal with the crisis. The proportion of Black non-Hispanic respondents who neither registered nor voted was also generally decreasing over these years. However, compared with other groups, the proportion of Hispanic respondents who neither registered nor voted was increasing across the time.  
+
+The similar trend also goes for the respondents who registered but did not vote. The proportion of White non-Hispanic respondents who registered but did not vote was generally decreasing over these years. The proportion of Hispanic respondents who registered but did not vote was increasing across the time, and reached its highest level in 2008. The proportion of Black non-Hispanic respondents who registered but did not vote was relatively stable over these years.  
+
+```{r fig.height = 10, fig.width = 8, echo=FALSE}
+load(file="../output/data_use.RData")
+
+data1 <- anes_use %>%
+  group_by(year, turnout)%>%
+  count(race)%>%
+  mutate(prop=n/sum(n))
+
+ggplot(data1,
+       aes(x=year, y=prop, fill=race)) +
+  geom_bar(stat="identity", colour="black") + facet_wrap(~turnout, ncol=1) + theme_bw()+
+  theme(axis.text.x = element_text(angle = 90),
+        plot.title = element_text(size=10,face="bold"))+
+  scale_fill_brewer(palette="Blues")+
+  labs(title="The percentage of different racial groups participated in the election over the years")
+```
+
+By checking the third graph above, it is clear to see the proportion of different racial groups who voted was increasing since 1952. This trend shows a good signal that more and more people from other racial and ethnical groups participated in the election process and were willing to make their voice to the society. By looking at the graph, the diverse rate of different groups seemed to reach its highest level in 2008, but after 2008, the proportion of respondents who voted in other racial groups instead of white kept declining since then.  
+
+
+After discussing the graphs about different racial and ethnical groups participated in the election over the years, let's check the respondents with different education levels participated in the election over the years. Compared with the four graphs of different categories of education level below, as education level gets higher, the proportion of the respondents who votes becomes larger. For the respondents who had Grade school (0-8 grades), averagely from $1/2$ to $2/3$ of the total respondents would participate in voting during each election. For those who obtained college or advanced degree, bascially everyone voted once he/she registered. Hence, it seems that education plays a relatively positive role in participation of voting.
+
+```{r fig.height = 10, fig.width = 8, echo=FALSE}
+data2 <- anes_use %>%
+  group_by(year, education)%>%
+  count(turnout)%>%
+  mutate(prop=n/sum(n))
+
+ggplot(data2,
+       aes(x=year, y=prop, fill= turnout)) +
+  geom_bar(stat="identity", colour="black") + facet_wrap(~education, ncol=1) + theme_bw()+
+  theme(axis.text.x = element_text(angle = 90),
+        plot.title = element_text(size=10,face="bold"))+
+  scale_fill_brewer(palette="Blues")+
+  labs(title="Respondents participated with different education level in the election over the years")
+```
+
+Therefore, let's combine the factors of ethnical/racial groups and education level together to look at the participation rate of vote. The graphs below demonstrate the turnout results for each racial/ethnical group with different education levels.
+```{r fig.height = 15, fig.width = 20, echo=FALSE}
+data3 <- anes_use %>%
+  group_by(year, race, education)%>%
+  count(turnout)%>%
+  mutate(prop=n/sum(n))
+
+ggplot(data3,
+       aes(x=year, y=prop, fill= turnout)) +
+  geom_bar(stat="identity", colour="black") + facet_wrap(~ race + education, ncol=4) + theme_bw()+
+  theme(axis.text.x = element_text(angle = 90), 
+        plot.title = element_text(size=30,face="bold"))+
+  scale_fill_brewer(palette="Blues")+
+  labs(title="Different racial groups with different education levels in the election over the years")
+```
+
+The first row of the graphs shows the participation rate of White non-Hispanic respondents with the four different education degrees. The trend is apparent that the proportion of white non-Hispanic respondents who voted(registered) becomes higher when they obtain a higher education degree. The second row of the graphs illustrate the participation rate of Black non-Hispanic respondents with the four different education degrees. The tendency is similar to what we found in the first row: black non-Hispanic respondents participated more in the election voting process as their education degrees became higher. As for the rest of rows, the category of _Non-white and Non-black_ was used in the survey from 1948 to 1964. After 1964, this category has been separated into the other 4 categories: _Asian or Pacific Islander non-Hispanic_, _American Indian or Alaska Native non-Hispanic_ and _Hispanic_. This is why there were no data on _Non-white and Non-black_ after 1964. The category of _Other or multiple races non-Hispanic_ was intriduced in 1968. Although there were not many data before 1964 for the rest of categories, the similar tendency is still applicable to _Asian or Pacific Islander non-Hispanic_, _American Indian or Alaska Native non-Hispanic_ and _Hispanic_. We can see that the the proportion of the votes from respondents in these three racial/ethnical categories with college/advanced degrees is much higher than those with lower education degrees over the years. The situation of _Other or multiple races non-Hispanic_ looks a bit different and no common charateristics. This may be caused by respondents who identified themselves as mutiple races.
+
+In conclusion, most of the racial/ethnical groups follow the similar trait: people with higher education degrees participate more in election vote than those with a relatively low education degrees. This conclusion is reasonable since education makes people more liberal and willing to fight for their voices with their votes to make the society better. However, there are some limitations in this analysis. First, this analysis is based on my cleaning data set and its NA values have already been removed. These NA values may be due to people's unwillingness to answer some of the survey questions. Since we don't know the answers we supposed to know, there would be some response bias. In addition, as I mentioned in the last paragraph, after 1964, the options of racial/ethnical groups were changed in the survey, so this may cause some variance in the collected data set. Finally, this data sample does not represent the whole population. In order to get more precise answers, more people need to participate the survey. 
+
+
+
