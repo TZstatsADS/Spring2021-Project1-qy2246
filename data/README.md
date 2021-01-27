@@ -7,9 +7,9 @@ The data directory contains data used in the analysis. This is treated as read o
 In this project, the data includes:
 
   + anes_timeseries_cdf.sav：raw data that contains every version of the data
-  + anes_timeseries_cdf_codebook folder: contains anes_timeseries_cdf_codebook_app.pdf
-                                                  anes_timeseries_cdf_codebook_app.txt
-                                                  anes_timeseries_cdf_codebook_int.pdf
-                                                  anes_timeseries_cdf_codebook_int.txt
-                                                  anes_timeseries_cdf_codebook_var.txt
+  + anes_timeseries_cdf_codebook folder: contains anes_timeseries_cdf_codebook_app.pdf,
+                                                  anes_timeseries_cdf_codebook_app.txt,
+                                                  anes_timeseries_cdf_codebook_int.pdf,
+                                                  anes_timeseries_cdf_codebook_int.txt,
+                                                  anes_timeseries_cdf_codebook_var.txt,
                                                   anes_timeseries_cdf_var.pdf
